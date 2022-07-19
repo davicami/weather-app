@@ -159,3 +159,5 @@ const error = document.querySelector('.error-msg');
 searchForm.addEventListener('submit', handleSubmit);
 searchButton.addEventListener('click', handleSubmit);
 
+// location shown by default
+getWeather('Milan');
