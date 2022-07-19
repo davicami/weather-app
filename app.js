@@ -68,26 +68,16 @@ async function getWeather(userLocation = "Milan") {
 }
 
 function processData(coord, weatherData) {
-    // grab all the data i want to display on the page
+    // grab all the data to display on the page
     const myData = {
-        condition: weatherData.current.weather[0].description,
+        weatherDescription: weatherData.current.weather[0].description,
         feelsLike: Math.round(weatherData.current.feels_like),
-        currentTemp: Math.round(weatherData.current.temp),
-        wind: Math.round(weatherData.current.wind_speed),
+        temperature: Math.round(weatherData.current.temp),
+        windSpeed: Math.round(weatherData.current.wind_speed),
         humidity: weatherData.current.humidity,
         location: coord.name,
         country: coord.country,
     };
-
-    // if in the US, add state
-    // if not, add country
-    /*
-    if (weatherData.location.country === 'United States of America') {
-        myData['region'] = weatherData.location.region.toUpperCase();
-    } else {
-        myData['region'] = weatherData.location.country.toUpperCase();
-    }
-    */
 
     console.log(myData);
 
@@ -97,17 +87,13 @@ function processData(coord, weatherData) {
 function displayData(newData) {
     
     document.querySelector('#location').textContent = newData.location;
+    document.querySelector('#weather-description').textContent = newData.weatherDescription;
+    document.querySelector('#temperature').textContent = 'Current temperature: ' + newData.temperature + ' °C';
+    document.querySelector('#feels-like').textContent = 'Feels like: '+newData.feelsLike + ' °C';
+    document.querySelector('#wind-speed').textContent = 'Wind speed: '+ newData.windSpeed + ' meter/sec';
+    document.querySelector('#humidity').textContent = 'Humidity: '+ newData.humidity + ' %';
     /*
-    document.querySelector(
-        '.location'
-    ).textContent = `${newData.location}, ${newData.region}`;
-    document.querySelector('.degrees').textContent = newData.currentTemp.f;
-    document.querySelector(
-        '.feels-like'
-    ).textContent = `FEELS LIKE: ${newData.feelsLike.f}`;
-    document.querySelector('.wind-mph').textContent = `WIND: ${newData.wind} MPH`;
-    document.querySelector(
-        '.humidity'
+    
     ).textContent = `HUMIDITY: ${newData.humidity}`;
     */
 
