@@ -4,18 +4,18 @@ console.log('This is a weather app');
 const apiKey = 'a39e510433962c881582475bc0333e5a';
 
 // Builds request url to obtain coordinates
-function buildRequestCoordsUrl(cityName, apiKey) {
+function buildCoordsUrl(cityName, apiKey) {
     return `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&APPID=${apiKey}`;
 }
 
 // Builds request url to obtain weather forecast
-function buildRequestForecastUrl(coordinates, units) {
-    return `https://api.openweathermap.org/data/2.5/onecall?lat=${coordinates.lat}&lon=${coordinates.lon}&exclude=minutely,alerts&units=${units}&appid=20f7632ffc2c022654e4093c6947b4f4`;
+function buildForecastUrl(coordinates, units) {
+    return `https://api.openweathermap.org/data/2.5/onecall?lat=${coordinates.lat}&lon=${coordinates.lon}&exclude=daily,hourly,minutely,alerts&units=${units}&appid=20f7632ffc2c022654e4093c6947b4f4`;
 }
 
 // Returns coordinates, city name and country for a specified city name.
 async function getCoord(url) {
-    const response = await fetch(url);
+    const response = await fetch(url, { mode: 'cors' });
     const data = await response.json();
     console.log(data);
     //console.log(data.name);
@@ -34,7 +34,7 @@ async function getCoord(url) {
 }
 
 async function getForecast(url) {
-    const response = await fetch(url);
+    const response = await fetch(url, { mode: 'cors' });
     const data = await response.json();
     console.log(data);
 
@@ -43,27 +43,98 @@ async function getForecast(url) {
 }
 
 // main function that uses getForecast (and getCoord)
-async function getWeather() {
-    
+async function getWeather(userLocation = "Milan") {
+
     // Building url to get coord for the initial city(Rome in this case)
-    let requestCoordUrl = buildRequestCoordsUrl('Milan', apiKey);
-    console.log(`url: ${requestCoordUrl}`);
+    let coordUrl = buildCoordsUrl(userLocation, apiKey);
+    console.log(`url: ${coordUrl}`);
 
     // Is needed to wait until this promise is resolved, otherwise we will have 
     // undefined coordinates
-    let coord = await getCoord(requestCoordUrl);
+    let coord = await getCoord(coordUrl);
 
     // Building url to get forecast, passing the premise coord of the give city
-    let requestForecastUrl = buildRequestForecastUrl(coord); 
-    console.log(`forecst url: ${requestForecastUrl}`);
-    let forecastData = await getForecast(requestForecastUrl);
+    let forecastUrl = buildForecastUrl(coord, 'metric');
+    console.log(`forecast url: ${forecastUrl}`);
+    let forecastData = await getForecast(forecastUrl);
 
-    // passing the forecast data to the function that will select and display 
+    // process the forecst data to extract only the data the app uses
+    let processedData = processData(coord, forecastData);
+
+    // passing the processed data to the function that will select and display 
     // the data, interacting with the DOM
-    displayData(forecastData)
+    displayData(processedData);
 
 }
+
+function processData(coord, weatherData) {
+    // grab all the data i want to display on the page
+    const myData = {
+        condition: weatherData.current.weather[0].description,
+        feelsLike: Math.round(weatherData.current.feels_like),
+        currentTemp: Math.round(weatherData.current.temp),
+        wind: Math.round(weatherData.current.wind_speed),
+        humidity: weatherData.current.humidity,
+        location: coord.name,
+        country: coord.country,
+    };
+
+    // if in the US, add state
+    // if not, add country
+    /*
+    if (weatherData.location.country === 'United States of America') {
+        myData['region'] = weatherData.location.region.toUpperCase();
+    } else {
+        myData['region'] = weatherData.location.country.toUpperCase();
+    }
+    */
+
+    console.log(myData);
+
+    return myData;
+}
+
+function displayData(newData) {
+    
+    document.querySelector('#location').textContent = newData.location;
+    /*
+    document.querySelector(
+        '.location'
+    ).textContent = `${newData.location}, ${newData.region}`;
+    document.querySelector('.degrees').textContent = newData.currentTemp.f;
+    document.querySelector(
+        '.feels-like'
+    ).textContent = `FEELS LIKE: ${newData.feelsLike.f}`;
+    document.querySelector('.wind-mph').textContent = `WIND: ${newData.wind} MPH`;
+    document.querySelector(
+        '.humidity'
+    ).textContent = `HUMIDITY: ${newData.humidity}`;
+    */
+
+}
+
+
+// get location from user
+function fetchWeather() {
+    const input = document.querySelector('#search-input');
+    const userLocation = input.value;
+    getWeather(userLocation);
+}
+
+function handleSubmit(e) {
+    e.preventDefault();
+    fetchWeather();
+}
+
+
+const searchForm = document.querySelector('#search-form');
+const searchButton = document.querySelector('#search-button');
+//const error = document.querySelector('.error-msg');
+
+searchForm.addEventListener('submit', handleSubmit);
+searchButton.addEventListener('click', handleSubmit);
 
 // function to call on the loading of the page, and when is requested the 
 // forecast for a new city
 getWeather();
+
