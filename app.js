@@ -85,6 +85,7 @@ function resetSearchForm() {
 function processData(coord, weatherData) {
     // grab all the data to display on the page
     const myData = {
+        weatherIcon: weatherData.current.weather[0].icon,
         weatherDescription: weatherData.current.weather[0].description,
         feelsLike: Math.round(weatherData.current.feels_like),
         temperature: Math.round(weatherData.current.temp),
@@ -110,6 +111,8 @@ function displayData(newData) {
         div.classList.add('fade-in2');
     }
 
+    const iconUrl = "http://openweathermap.org/img/w/" + newData.weatherIcon + ".png";
+    document.querySelector('#icon-image').src = iconUrl; 
     document.querySelector('#location').textContent = newData.location + ', ' + newData.country;
     document.querySelector('#weather-description').textContent = newData.weatherDescription;
     document.querySelector('#temperature').textContent = 'Current temperature: ' + newData.temperature + ' °C';
